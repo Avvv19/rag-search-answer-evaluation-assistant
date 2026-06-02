@@ -1,0 +1,51 @@
+question_id,question,expected_answer,expected_doc,expected_page,expected_chunk,answerable,question_type,difficulty
+q001,What is the annual leave entitlement for full-time employees?,Full-time employees are entitled to 20 days of annual leave per year.,hr_policy.pdf,3,,1,policy,easy
+q002,What is the probation period for new hires?,The standard probation period is 3 months.,hr_policy.pdf,2,,1,factual,easy
+q003,Describe the remote work policy.,Employees may work remotely up to 3 days per week with manager approval.,hr_policy.pdf,5,,1,policy,medium
+q004,What are the data retention requirements for financial records?,Financial records must be retained for a minimum of 7 years.,compliance.pdf,8,,1,policy,medium
+q005,Explain the GDPR data subject rights.,Data subjects have the right to access rectification erasure portability and objection.,compliance.pdf,12,,1,summary,hard
+q006,What is the notice period for resignation?,Employees must provide 4 weeks written notice.,hr_policy.pdf,7,,1,factual,easy
+q007,Compare the leave policies for part-time and full-time employees.,Part-time employees receive leave on a pro-rata basis compared to full-time entitlements.,hr_policy.pdf,3,,1,comparison,medium
+q008,What is the penalty for non-compliance with data protection rules?,Non-compliance can result in fines up to 4% of annual global turnover.,compliance.pdf,15,,1,numeric,hard
+q009,When was the last policy revision?,2023-09-01,hr_policy.pdf,1,,1,numeric,easy
+q010,What qualifications are required for a senior software engineer role?,5 years experience plus a relevant degree or equivalent.,job_description.pdf,2,,1,factual,medium
+q011,What is the company's stance on workplace harassment?,Zero tolerance policy with immediate investigation and disciplinary action.,hr_policy.pdf,10,,1,policy,easy
+q012,How many days of sick leave are provided per year?,10 days paid sick leave per year.,hr_policy.pdf,4,,1,numeric,easy
+q013,What is the process for raising a grievance?,Employees should first raise informally with their manager then formally with HR.,hr_policy.pdf,11,,1,factual,medium
+q014,Describe the onboarding process for new employees.,New employees complete a 2-week onboarding including system access training and buddy assignment.,onboarding.pdf,1,,1,summary,medium
+q015,What security clearance is required for access to classified systems?,Level 3 security clearance with annual review.,compliance.pdf,20,,1,factual,hard
+q016,What is the company's revenue in fiscal year 2023?,Revenue was $2.4 billion in FY2023.,annual_report.pdf,5,,1,numeric,easy
+q017,Summarise the key risks identified in the annual report.,Key risks include market volatility regulatory changes and supply chain disruptions.,annual_report.pdf,22,,1,summary,hard
+q018,What is the maternity leave entitlement?,26 weeks statutory maternity leave with 6 weeks enhanced pay.,hr_policy.pdf,6,,1,policy,medium
+q019,How should confidential documents be disposed of?,Confidential documents must be shredded using cross-cut shredders.,compliance.pdf,18,,1,policy,easy
+q020,What are the IT acceptable use policy rules?,Personal use is limited; downloading unauthorised software is prohibited.,it_policy.pdf,1,,1,policy,medium
+q021,Who is responsible for approving travel expenses?,Direct line managers approve travel expenses up to £500; above requires department head approval.,expenses.pdf,3,,1,factual,medium
+q022,What is the maximum expense claim per meal?,£40 per meal for domestic travel.,expenses.pdf,4,,1,numeric,easy
+q023,Compare the parental leave policies for primary and secondary caregivers.,Primary caregivers receive 26 weeks; secondary caregivers receive 4 weeks.,hr_policy.pdf,6,,1,comparison,hard
+q024,What training is mandatory for all employees annually?,Data protection and health and safety training are mandatory annually.,compliance.pdf,7,,1,policy,easy
+q025,What version of the software is currently supported?,Version 3.2 and above are supported.,technical_docs.pdf,1,,1,factual,easy
+q026,How do I configure SSO for the enterprise portal?,Configure SSO by setting the identity provider URL and uploading SAML metadata.,technical_docs.pdf,8,,1,factual,hard
+q027,What are the SLA response times for priority 1 incidents?,Priority 1 incidents must be acknowledged within 15 minutes and resolved within 4 hours.,sla.pdf,2,,1,numeric,medium
+q028,What is the escalation path for unresolved customer complaints?,Escalate to team lead after 48 hours then to department manager after 72 hours.,support.pdf,5,,1,factual,medium
+q029,Describe the API rate limiting rules.,API requests are limited to 1000 per hour per API key.,technical_docs.pdf,15,,1,policy,medium
+q030,What encryption standard is used for data at rest?,AES-256 encryption is used for all data at rest.,compliance.pdf,19,,1,factual,hard
+q031,What is the policy on using personal devices for work?,BYOD is permitted with mandatory MDM enrollment and screen lock.,it_policy.pdf,6,,1,policy,medium
+q032,What are the board of directors' key responsibilities?,The board oversees strategy risk and financial performance.,governance.pdf,2,,1,summary,hard
+q033,What is the dividend per share for FY2023?,Dividend per share was $0.45 in FY2023.,annual_report.pdf,7,,1,numeric,easy
+q034,How long must contracts be retained after expiry?,Contracts must be retained for 6 years after expiry.,compliance.pdf,9,,1,numeric,medium
+q035,What support channels are available to customers?,Phone email live chat and self-service portal.,support.pdf,1,,1,factual,easy
+q036,What is the office opening hours policy?,Core hours are 9am to 5pm Monday to Friday with flexitime available.,hr_policy.pdf,8,,1,policy,easy
+q037,Is there a company car policy and who qualifies?,Company cars are available for employees at grade 5 and above.,hr_policy.pdf,9,,1,factual,medium
+q038,What is the discount rate used in the DCF analysis?,A discount rate of 8.5% was used in the DCF analysis.,annual_report.pdf,18,,1,numeric,hard
+q039,Explain the product roadmap for the next 12 months.,The roadmap includes API v4 mobile app redesign and AI feature integration.,product.pdf,3,,1,summary,hard
+q040,What are the customer support escalation SLAs for enterprise clients?,Enterprise clients receive 2-hour response and 8-hour resolution for critical issues.,sla.pdf,6,,1,numeric,hard
+q041,What is the capital expenditure for FY2023?,Capital expenditure was $340 million in FY2023.,annual_report.pdf,9,,1,numeric,medium
+q042,Describe the business continuity plan.,The BCP includes offsite backups regular drills and a designated recovery site.,bcp.pdf,1,,1,summary,hard
+q043,What are the eligibility criteria for the employee share scheme?,Employees must have completed 12 months of service to be eligible.,hr_policy.pdf,13,,1,policy,medium
+q044,What is the moon made of?,The moon is made of cheese.,nonexistent.pdf,0,,0,unanswerable,easy
+q045,What was the outcome of the 2089 merger?,No information available.,nonexistent.pdf,0,,0,unanswerable,medium
+q046,Who is the CEO of the company as of 2030?,No information available.,nonexistent.pdf,0,,0,unanswerable,hard
+q047,What is 2 plus 2?,4,nonexistent.pdf,0,,0,unanswerable,easy
+q048,Provide a multi-document summary of all HR and compliance obligations.,Employees must follow HR policies for leave conduct and expenses while complying with data protection and security rules.,hr_policy.pdf,1,,1,multi_doc,hard
+q049,When is performance review season?,Performance reviews are conducted in Q1 and Q3.,hr_policy.pdf,14,,1,factual,easy
+q050,What are the key metrics used to evaluate customer support performance?,CSAT score first contact resolution rate and average handle time.,support.pdf,8,,1,factual,medium

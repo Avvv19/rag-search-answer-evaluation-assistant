@@ -1,0 +1,40 @@
+# Environment
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data & indexes (large binary files)
+data/vector_indexes/
+data/raw_documents/
+data/processed_chunks/
+*.index
+*.pkl
+
+# Database
+data/*.db
+*.db-shm
+*.db-wal
+
+# Reports (generated)
+reports/*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Streamlit
+.streamlit/secrets.toml
