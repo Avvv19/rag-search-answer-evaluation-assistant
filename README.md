@@ -144,7 +144,7 @@ uvicorn backend.api:app --reload --port 8000
 
 ---
 
-## 📁 Project Structure (48 files · 2,918 lines)
+## 📁 Project Structure
 
 ```
 rag_search_answer_evaluation_assistant/
