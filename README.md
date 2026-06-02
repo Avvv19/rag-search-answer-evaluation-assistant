@@ -16,8 +16,6 @@
 
 > **Most RAG chatbots just answer. This system also _evaluates_ whether those answers can be trusted.**
 
-<br/>
-
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  Upload Docs → Semantic Search → Grounded Answers → Trust Scores    ║
@@ -40,126 +38,249 @@
 
 ---
 
-## 📸 Screenshots & Proof of Work
+## 📸 Screenshots
 
-### 📁 Project Structure (48 files · 2,918 lines of Python)
+### Page 1 — Upload Documents
+*Upload PDF, DOCX, TXT, CSV, XLSX, HTML files. Configure chunking strategy, chunk size, overlap, embedding model, and vector store. View indexed document table with live status.*
+
+<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page1_upload_documents.png" width="100%" alt="Upload Documents Page"/>
+
+---
+
+### Page 2 — Ask Questions
+*Type a natural-language question. Get a grounded answer with source citations, similarity scores, evidence strength rating, and per-chunk reranking scores.*
+
+<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page2_ask_questions.png" width="100%" alt="Ask Questions Page"/>
+
+---
+
+### Page 3 — Evaluation Runner
+*Load 50 benchmark questions (CSV / DB / manual). Run end-to-end evaluation. See generated vs expected answers side-by-side with Precision@K, Faithfulness, and failure category per question.*
+
+<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page3_run_evaluation.png" width="100%" alt="Run Evaluation Page"/>
+
+---
+
+### Page 4 — Metrics Dashboard
+*10 KPI tiles + bar charts for answer quality metrics, source hit rate by question type, latency histogram, and failure category breakdown.*
+
+<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page4_metrics_dashboard.png" width="100%" alt="Metrics Dashboard Page"/>
+
+---
+
+### Page 5 — Failure Analysis
+*Per-failure drill-down: generated vs expected answer, root-cause category, retrieval metadata, and specific actionable improvement suggestion.*
+
+<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page5_failure_analysis.png" width="100%" alt="Failure Analysis Page"/>
+
+---
+
+## 🏗️ Architecture
+
+```
+User Query
+    │
+    ▼
+┌─────────────────────────────────────────────────────┐
+│              Streamlit UI (5 pages)                  │
+└────────────────────┬────────────────────────────────┘
+                     │
+              FastAPI Backend (optional)
+                     │
+    ┌────────────────┼────────────────┐
+    ▼                ▼                ▼
+Vector Search     BM25 Search    Metadata Filter
+(FAISS/Chroma)  (rank-bm25)      (SQLite)
+    │                │
+    └────────┬───────┘
+             ▼
+      RRF Hybrid Fusion
+             │
+             ▼
+     Cross-Encoder Reranker
+             │
+             ▼
+     Answer Generator
+   (Ollama / HuggingFace / Stub)
+             │
+             ▼
+    Evaluation & Metrics Engine
+    (12 metrics · 10 failure categories)
+```
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone
+git clone https://github.com/Avvv19/rag-search-answer-evaluation-assistant.git
+cd rag-search-answer-evaluation-assistant
+
+# 2. Install
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+# 3. Configure
+cp .env.example .env       # edit LLM_BACKEND, EMBEDDING_MODEL, etc.
+
+# 4. Launch
+streamlit run app/streamlit_app.py
+# → http://localhost:8501
+```
+
+### Docker
+```bash
+docker build -t rag-eval .
+docker run -p 8501:8501 -v $(pwd)/data:/app/data rag-eval
+```
+
+### FastAPI (optional)
+```bash
+uvicorn backend.api:app --reload --port 8000
+# → http://localhost:8000/docs
+```
+
+---
+
+## 📁 Project Structure (48 files · 2,918 lines)
 
 ```
 rag_search_answer_evaluation_assistant/
-│
-├── 📱 app/
-│   ├── streamlit_app.py                 ← Main entry point
+├── app/
+│   ├── streamlit_app.py              ← Main entry point
 │   └── pages/
-│       ├── 1_upload_documents.py        ← Page 1: Upload & Index
-│       ├── 2_ask_questions.py           ← Page 2: Q&A with citations
-│       ├── 3_run_evaluation.py          ← Page 3: Eval runner
-│       ├── 4_metrics_dashboard.py       ← Page 4: Metrics viz
-│       └── 5_failure_analysis.py        ← Page 5: Failure drill-down
-│
-├── 🔧 backend/
-│   ├── config.py          ← Pydantic settings (.env)
-│   ├── ingestion.py       ← PDF/DOCX/TXT/CSV/XLSX/HTML parsers
-│   ├── chunking.py        ← 4 chunking strategies
-│   ├── embeddings.py      ← Sentence-Transformers (6 models)
-│   ├── vector_store.py    ← FAISS + ChromaDB abstraction
-│   ├── bm25_search.py     ← BM25 keyword index
-│   ├── hybrid_retriever.py← RRF fusion (vector + BM25)
-│   ├── reranker.py        ← Cross-encoder reranker
-│   ├── generator.py       ← Ollama / HuggingFace / Stub LLM
-│   ├── evaluator.py       ← All 12 retrieval+answer metrics
-│   ├── feedback.py        ← User rating collection
-│   ├── pipeline.py        ← End-to-end orchestration
-│   └── api.py             ← FastAPI REST endpoints
-│
-├── 🗄️ database/
-│   ├── schema.sql         ← 6 SQLite tables
-│   └── db.py              ← CRUD helpers
-│
-├── 📊 evaluation/
-│   ├── test_questions.csv ← 50 benchmark questions
-│   ├── run_eval.py        ← CLI evaluation runner
-│   ├── metrics.py         ← Aggregate metric computation
-│   └── failure_analysis.py← Failure export & categorisation
-│
-├── 🧪 tests/
-│   ├── test_chunking.py   ← 6 chunking tests
-│   ├── test_retrieval.py  ← 8 retrieval tests (BM25 + RRF)
-│   └── test_evaluation.py ← 13 metric unit tests
-│
-├── 🐳 Dockerfile
-├── 📋 requirements.txt    ← 25+ packages
-└── ⚙️  .env.example
+│       ├── 1_upload_documents.py     ← Upload & index
+│       ├── 2_ask_questions.py        ← Q&A + citations
+│       ├── 3_run_evaluation.py       ← Eval runner
+│       ├── 4_metrics_dashboard.py    ← Metrics viz
+│       └── 5_failure_analysis.py     ← Failure diagnosis
+├── backend/
+│   ├── config.py           ingestion.py   chunking.py
+│   ├── embeddings.py       vector_store.py  bm25_search.py
+│   ├── hybrid_retriever.py reranker.py    generator.py
+│   ├── evaluator.py        feedback.py    pipeline.py   api.py
+├── database/
+│   ├── schema.sql (6 tables)    db.py (CRUD helpers)
+├── evaluation/
+│   ├── test_questions.csv (50 questions)
+│   ├── run_eval.py   metrics.py   failure_analysis.py
+├── tests/
+│   ├── test_chunking.py (6 tests)
+│   ├── test_retrieval.py (8 tests)
+│   └── test_evaluation.py (13 tests)
+├── Dockerfile    requirements.txt    .env.example
 ```
 
 ---
 
-### 🖥️ Page 1 — Upload Documents
+## 🧠 Supported Models
 
+### Embedding Models
+
+| Model | Params | Best For |
+|-------|--------|----------|
+| `all-MiniLM-L6-v2` ⭐ | 22M | General purpose (default) |
+| `multi-qa-MiniLM-L6-cos-v1` | 22M | Q&A retrieval |
+| `BAAI/bge-small-en` | 33M | High quality, small |
+| `BAAI/bge-base-en` | 109M | High quality, larger |
+| `intfloat/e5-small-v2` | 33M | E5 family |
+| `intfloat/e5-base-v2` | 109M | E5 family, larger |
+
+### LLM Backends
+
+| Backend | Config | Notes |
+|---------|--------|-------|
+| `ollama` 🦙 | `OLLAMA_MODEL=llama3` | 100% local, requires Ollama |
+| `huggingface` 🤗 | `HF_MODEL=google/flan-t5-base` | Auto-downloads |
+| `stub` 🧪 | — | Testing/CI mode |
+
+---
+
+## 📊 Evaluation Metrics
+
+### Retrieval
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  📄 Upload Documents                                                 │
-├────────────────────────────┬────────────────────────────────────────┤
-│  ⚙️ SIDEBAR SETTINGS        │  📂 DROP FILES HERE                    │
-│                            │  ┌────────────────────────────────┐   │
-│  Category:  [general     ] │  │  PDF  DOCX  TXT  CSV           │   │
-│  Strategy:  [overlap   ▼] │  │  XLSX  HTML  HTM               │   │
-│  Chunk size: [500 ◄────►] │  └────────────────────────────────┘   │
-│  Overlap %:  [10% ◄────►] │                                        │
-│  Embedding:  [MiniLM-L6 ▼]│  [🚀 Index uploaded files]             │
-│  Vector DB:  [faiss     ▼]│                                        │
-│                            ├────────────────────────────────────────┤
-│                            │  📚 Indexed Documents                  │
-│                            │  ┌──────────┬──────┬───────┬───────┐  │
-│                            │  │ Name     │Chunks│ Type  │Status │  │
-│                            │  ├──────────┼──────┼───────┼───────┤  │
-│                            │  │ hr.pdf   │  124 │  pdf  │✅ OK  │  │
-│                            │  │ sla.docx │   87 │ docx  │✅ OK  │  │
-│                            │  └──────────┴──────┴───────┴───────┘  │
-│                            │                                        │
-│                            │  📊  3 Docs │ 311 Chunks │ 2 Types     │
-└────────────────────────────┴────────────────────────────────────────┘
+Precision@K   = (relevant docs in top-K) / K
+Recall@K      = 1 if expected doc in top-K else 0
+MRR           = 1 / rank_of_first_relevant_result
+nDCG@K        = DCG@K / IDCG@K
+Source Coverage = matching chunks / total chunks
+```
+
+### Answer Quality
+```
+Answer Relevance  = cosine_sim(question, answer)
+Faithfulness      = avg sim(answer sentences, context)
+Completeness      = 0.4×token_overlap + 0.6×semantic_sim
+Citation Accuracy = correct citations / total citations
+Hallucination Risk = 1 - Faithfulness
+No-Answer Accuracy = correct refusal/answer rate
 ```
 
 ---
 
-### 🖥️ Page 2 — Ask Questions
+## 🔴 Failure Categories
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  💬 Ask Questions                                                    │
-├────────────────────────────┬────────────────────────────────────────┤
-│  ⚙️ RETRIEVAL SETTINGS      │  ┌──────────────────────────────────┐ │
-│                            │  │ What is the annual leave policy? │ │
-│  Top-K:  [5 ◄──────────►] │  └──────────────────────────────────┘ │
-│  ☑ Hybrid retrieval        │  [🔍 Ask]                             │
-│  ☑ Reranker               │                                        │
-│  Model: [MiniLM-L6-v2  ▼] │  ✅ Answer                            │
-│  LLM:   [ollama        ▼] │  ┌──────────────────────────────────┐ │
-│                            │  │ Full-time employees are entitled │ │
-│  🔎 FILTERS (optional)     │  │ to 20 days annual leave per year.│ │
-│  Doc: [(all)           ▼] │  │ [Source: hr_policy.pdf, Page 3]  │ │
-│  Cat: [(all)           ▼] │  └──────────────────────────────────┘ │
-│                            │                                        │
-│                            │  📊 STRONG │ 234 ms │ ollama          │
-│                            │                                        │
-│                            │  📎 Retrieved Sources                  │
-│                            │  ▼ [1] hr_policy.pdf — Page 3 (0.92) │
-│                            │     "Full-time employees receive 20…" │
-│                            │  ▼ [2] hr_policy.pdf — Page 4 (0.81) │
-│                            │     "Leave accrues at 1.67 days per…" │
-└────────────────────────────┴────────────────────────────────────────┘
+| Category | Meaning | Fix |
+|----------|---------|-----|
+| `retrieval_miss` | Correct doc not retrieved | Check indexing; try hybrid; ↑ top-K |
+| `low_relevance_retrieval` | Low similarity scores | Use `bge-base-en`; enable reranker |
+| `partial_context` | Only partial answer in context | ↑ chunk size; ↑ overlap; ↑ top-K |
+| `bad_chunking` | Context split across chunks | Switch to `section_aware` |
+| `conflicting_sources` | Multiple conflicting docs | Add metadata filters |
+| `unsupported_answer` | Answer not grounded | ↓ LLM temperature; stricter prompt |
+| `citation_mismatch` | Wrong docs cited | Normalise doc names on ingest |
+| `no_answer_failure` | Wrong refusal/answer decision | Tune evidence threshold |
+| `ambiguous_query` | Query too vague | Add query rewriting |
+| `metadata_filtering_failure` | Filters excluded correct doc | Verify metadata values |
+
+---
+
+## 🧪 Tests
+
+```bash
+pytest tests/ -v
+# 27 tests — chunking, BM25/RRF retrieval, all 12 evaluation metrics
 ```
 
 ---
 
-### 🖥️ Page 3 — Evaluation Runner
+## 📋 Benchmark Dataset
 
+50 questions across 8 types:
+- ✅ Factual lookup · Policy · Summary · Comparison
+- ✅ Numeric/date · Multi-document · Ambiguous
+- ✅ **Unanswerable** (tests no-answer refusal)
+
+---
+
+## 🔧 Configuration
+
+```env
+LLM_BACKEND=ollama          # ollama | huggingface | stub
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+VECTOR_STORE=faiss           # faiss | chroma
+TOP_K=5
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+USE_RERANKER=true
+USE_HYBRID=true
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  🧪 Run Evaluation                                                   │
-├─────────────────────────────────────────────────────────────────────┤
-│  Load Test Questions: [Upload CSV] [From Database] [Manual Entry]   │
-│                                                                     │
-│  ✅ Ready to evaluate 50 questions                                  │
-│                                                                     │
-│  [▶️ Run Evalu
+
+---
+
+## 📜 License
+
+MIT — see [LICENSE](LICENSE)
+
+---
+
+<div align="center">
+
+**Built with Streamlit · FAISS · ChromaDB · Sentence-Transformers · BM25 · Ollama**
+
+⭐ Star this repo if it helped you build more reliable RAG systems!
+
+</div>
