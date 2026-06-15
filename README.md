@@ -273,7 +273,7 @@ USE_HYBRID=true
 
 ## 📜 License
 
-MIT — see [LICENSE](LICENSE)
+MIT — Unregistered
 
 ---
 
