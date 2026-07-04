@@ -7,13 +7,7 @@ Indexes uploaded documents with sentence-level chunking and vector retrieval. Re
 
 ---
 
-## THE PROBLEM IT SOLVES
-
-RAG systems that return answers without measuring quality cannot be trusted in production. This system builds evaluation in from the start: every response is scored on three dimensions before it is surfaced. Answers that exceed the unsupported-answer risk threshold are flagged automatically.
-
----
-
-## ARCHITECTURE
+## Architecture
 
 ```mermaid
 flowchart TD
@@ -34,7 +28,7 @@ flowchart TD
 
 ---
 
-## EVALUATION APPROACH
+## Evaluation approach
 
 The system is evaluated against a fixed golden set of 25 representative questions covering factual extraction, summarization, edge cases, and multi-paragraph synthesis. Each response is scored on three dimensions:
 
@@ -49,6 +43,7 @@ python evaluation/run_eval.py
 ```
 
 ### Golden set categories
+
 | Category | Count | Description |
 |---|---|---|
 | Direct retrieval | 5 | Exact keyword or clause lookup |
@@ -65,13 +60,13 @@ python evaluation/run_eval.py
 
 ---
 
-## CHUNKING STRATEGY
+## Chunking strategy
 
 Documents are chunked at the sentence level rather than fixed character counts. This preserves semantic boundaries and prevents context windows from splitting mid-sentence.
 
 ---
 
-## TECH STACK
+## Tech stack
 
 | Component | Tool |
 |---|---|
@@ -85,7 +80,7 @@ Documents are chunked at the sentence level rather than fixed character counts. 
 
 ---
 
-## RUNNING LOCALLY
+## Running locally
 
 1. Clone the repo
 2. `pip install -r requirements.txt`
@@ -94,7 +89,7 @@ Documents are chunked at the sentence level rather than fixed character counts. 
 
 ---
 
-## RUNNING THE EVALUATION SUITE
+## Running the evaluation suite
 
 ```bash
 python evaluation/run_eval.py
@@ -102,7 +97,7 @@ python evaluation/run_eval.py
 
 ---
 
-## DESIGN DECISIONS
+## Design decisions
 
 **Why sentence-level chunking over fixed character splits**
 Fixed character splits break sentences mid-thought, reducing retrieval quality for natural language queries. Sentence-level boundaries preserve the semantic unit the model needs.
