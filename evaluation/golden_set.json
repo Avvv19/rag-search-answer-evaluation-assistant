@@ -1,0 +1,235 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Golden evaluation set for RAG Knowledge Assistant. 25 representative Q&A pairs covering direct retrieval, inference, multi-section reasoning, and out-of-scope edge cases.",
+    "scoring_dimensions": ["relevance", "source_coverage", "unsupported_answer_risk"],
+    "created": "2026-07-04"
+  },
+  "pairs": [
+    {
+      "id": "GS-001",
+      "category": "direct_retrieval",
+      "question": "What is the effective date of this agreement?",
+      "expected_answer_contains": ["effective date", "agreement"],
+      "expected_source_sections": ["preamble", "definitions", "header"],
+      "difficulty": "easy",
+      "notes": "Tests basic date extraction from document header or preamble"
+    },
+    {
+      "id": "GS-002",
+      "category": "direct_retrieval",
+      "question": "Who are the parties to this contract?",
+      "expected_answer_contains": ["party", "parties", "between"],
+      "expected_source_sections": ["preamble", "header"],
+      "difficulty": "easy",
+      "notes": "Tests named entity extraction from contract opening"
+    },
+    {
+      "id": "GS-003",
+      "category": "direct_retrieval",
+      "question": "What is the total contract value?",
+      "expected_answer_contains": ["value", "amount", "payment", "fee"],
+      "expected_source_sections": ["fees", "payment terms", "schedule"],
+      "difficulty": "easy",
+      "notes": "Tests numerical extraction from fee schedules"
+    },
+    {
+      "id": "GS-004",
+      "category": "direct_retrieval",
+      "question": "What is the notice period for termination?",
+      "expected_answer_contains": ["days", "notice", "termination"],
+      "expected_source_sections": ["termination", "notice"],
+      "difficulty": "easy",
+      "notes": "Tests specific clause retrieval"
+    },
+    {
+      "id": "GS-005",
+      "category": "direct_retrieval",
+      "question": "What governing law applies to this agreement?",
+      "expected_answer_contains": ["governing law", "jurisdiction", "state", "laws of"],
+      "expected_source_sections": ["governing law", "general provisions", "miscellaneous"],
+      "difficulty": "easy",
+      "notes": "Tests boilerplate clause retrieval"
+    },
+    {
+      "id": "GS-006",
+      "category": "inference",
+      "question": "Can either party assign this agreement to a third party without consent?",
+      "expected_answer_contains": ["assignment", "consent", "prior written"],
+      "expected_source_sections": ["assignment", "general provisions"],
+      "difficulty": "medium",
+      "notes": "Tests inference from assignment clause — answer requires interpreting restriction language"
+    },
+    {
+      "id": "GS-007",
+      "category": "inference",
+      "question": "What happens if payment is not made within the due date?",
+      "expected_answer_contains": ["late", "interest", "penalty", "default"],
+      "expected_source_sections": ["payment terms", "default"],
+      "difficulty": "medium",
+      "notes": "Tests conditional reasoning across payment and default clauses"
+    },
+    {
+      "id": "GS-008",
+      "category": "inference",
+      "question": "Is the vendor required to maintain insurance?",
+      "expected_answer_contains": ["insurance", "coverage", "maintain"],
+      "expected_source_sections": ["insurance", "indemnification"],
+      "difficulty": "medium",
+      "notes": "Tests presence/absence inference — correct answer requires confirming the clause exists"
+    },
+    {
+      "id": "GS-009",
+      "category": "inference",
+      "question": "What obligations survive termination of this agreement?",
+      "expected_answer_contains": ["survive", "termination", "confidentiality"],
+      "expected_source_sections": ["survival", "termination", "confidentiality"],
+      "difficulty": "medium",
+      "notes": "Requires synthesising survival clause with specific listed obligations"
+    },
+    {
+      "id": "GS-010",
+      "category": "multi_section",
+      "question": "Summarise all payment-related obligations in this agreement.",
+      "expected_answer_contains": ["invoice", "due", "payment", "late"],
+      "expected_source_sections": ["payment terms", "fees", "schedule"],
+      "difficulty": "hard",
+      "notes": "Requires retrieval and synthesis across multiple payment-related sections"
+    },
+    {
+      "id": "GS-011",
+      "category": "multi_section",
+      "question": "What are the key milestones and their associated deliverables?",
+      "expected_answer_contains": ["milestone", "deliverable", "date"],
+      "expected_source_sections": ["schedule", "scope of work", "deliverables"],
+      "difficulty": "hard",
+      "notes": "Requires cross-referencing milestone table with deliverable descriptions"
+    },
+    {
+      "id": "GS-012",
+      "category": "multi_section",
+      "question": "What restrictions apply to the use of confidential information?",
+      "expected_answer_contains": ["confidential", "disclose", "purpose", "permitted"],
+      "expected_source_sections": ["confidentiality", "data protection"],
+      "difficulty": "hard",
+      "notes": "Requires synthesising permitted use, exceptions, and duration from confidentiality section"
+    },
+    {
+      "id": "GS-013",
+      "category": "multi_section",
+      "question": "What are the indemnification obligations of each party?",
+      "expected_answer_contains": ["indemnify", "defend", "hold harmless"],
+      "expected_source_sections": ["indemnification"],
+      "difficulty": "hard",
+      "notes": "Tests reciprocal obligation extraction — both party A and party B obligations needed"
+    },
+    {
+      "id": "GS-014",
+      "category": "numerical",
+      "question": "What is the limitation of liability cap?",
+      "expected_answer_contains": ["liability", "cap", "limit", "exceed"],
+      "expected_source_sections": ["limitation of liability"],
+      "difficulty": "medium",
+      "notes": "Tests numerical cap extraction — model should not invent a number if not stated"
+    },
+    {
+      "id": "GS-015",
+      "category": "numerical",
+      "question": "How many days does the receiving party have to report a data breach?",
+      "expected_answer_contains": ["days", "notify", "breach"],
+      "expected_source_sections": ["data protection", "security", "incident response"],
+      "difficulty": "medium",
+      "notes": "Tests specific numerical requirement extraction from security clause"
+    },
+    {
+      "id": "GS-016",
+      "category": "edge_case_out_of_scope",
+      "question": "What is the CEO's compensation package?",
+      "expected_answer_contains": [],
+      "expected_behavior": "refuse_or_acknowledge_not_found",
+      "difficulty": "edge",
+      "notes": "Out-of-scope question — correct response is acknowledging the information is not in the document"
+    },
+    {
+      "id": "GS-017",
+      "category": "edge_case_out_of_scope",
+      "question": "What is the current stock price of the company?",
+      "expected_answer_contains": [],
+      "expected_behavior": "refuse_or_acknowledge_not_found",
+      "difficulty": "edge",
+      "notes": "Temporal out-of-scope — model should not hallucinate current data"
+    },
+    {
+      "id": "GS-018",
+      "category": "edge_case_ambiguous",
+      "question": "Is this a good contract?",
+      "expected_answer_contains": [],
+      "expected_behavior": "clarify_or_decline_subjective",
+      "difficulty": "edge",
+      "notes": "Subjective question — model should ask for clarification or explain it can only report factual content"
+    },
+    {
+      "id": "GS-019",
+      "category": "edge_case_ambiguous",
+      "question": "What does section 5 say?",
+      "expected_answer_contains": [],
+      "expected_behavior": "retrieve_section_5",
+      "difficulty": "edge",
+      "notes": "Under-specified reference — correct answer requires finding section 5 and summarising it"
+    },
+    {
+      "id": "GS-020",
+      "category": "negation",
+      "question": "What activities are explicitly prohibited under this agreement?",
+      "expected_answer_contains": ["shall not", "prohibited", "must not", "may not"],
+      "expected_source_sections": ["restrictions", "acceptable use", "prohibited activities"],
+      "difficulty": "medium",
+      "notes": "Negation retrieval — model must find prohibition language, not just permission language"
+    },
+    {
+      "id": "GS-021",
+      "category": "temporal",
+      "question": "When does the initial term of this agreement expire?",
+      "expected_answer_contains": ["term", "expire", "expiry", "renewal"],
+      "expected_source_sections": ["term", "renewal", "duration"],
+      "difficulty": "easy",
+      "notes": "Basic temporal retrieval — expiry date or duration period"
+    },
+    {
+      "id": "GS-022",
+      "category": "temporal",
+      "question": "Does this agreement auto-renew? If so, under what conditions?",
+      "expected_answer_contains": ["renew", "automatic", "notice", "opt-out"],
+      "expected_source_sections": ["term", "renewal"],
+      "difficulty": "medium",
+      "notes": "Boolean plus conditional — must confirm yes/no AND extract the conditions"
+    },
+    {
+      "id": "GS-023",
+      "category": "conditional",
+      "question": "Under what conditions can the client terminate for convenience?",
+      "expected_answer_contains": ["convenience", "terminate", "notice"],
+      "expected_source_sections": ["termination"],
+      "difficulty": "medium",
+      "notes": "Conditional extraction — must isolate for-convenience vs for-cause termination rights"
+    },
+    {
+      "id": "GS-024",
+      "category": "multi_section",
+      "question": "What are all the representations and warranties made by the service provider?",
+      "expected_answer_contains": ["represent", "warrant", "warrants"],
+      "expected_source_sections": ["representations and warranties"],
+      "difficulty": "hard",
+      "notes": "List extraction across potentially long representations section"
+    },
+    {
+      "id": "GS-025",
+      "category": "contradiction_check",
+      "question": "Are there any inconsistencies between the payment terms in the body and the attached schedule?",
+      "expected_answer_contains": [],
+      "expected_behavior": "cross_reference_body_and_schedule",
+      "difficulty": "hard",
+      "notes": "Cross-document consistency check — hardest category, tests whether retrieval covers all chunks"
+    }
+  ]
+}

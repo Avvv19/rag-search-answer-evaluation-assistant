@@ -1,286 +1,175 @@
-<div align="center">
+# RAG Knowledge Assistant with Retrieval Evaluation
 
-# 🔍 RAG Search & Answer Evaluation Assistant
+Document Q&A system with a production-grade evaluation pipeline. Upload any document, ask questions, get grounded answers with source citations — and every response is scored against a fixed golden evaluation set before it leaves the system.
 
-### *Enterprise-grade RAG platform with built-in reliability measurement*
+---
 
-<img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/Streamlit-1.32+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white"/>
-<img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
-<img src="https://img.shields.io/badge/FAISS-Vector%20Search-0467DF?style=for-the-badge&logo=meta&logoColor=white"/>
-<img src="https://img.shields.io/badge/ChromaDB-Vector%20Store-F5A623?style=for-the-badge&logoColor=white"/>
-<img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
-<img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge"/>
+## What it does
 
-<br/>
+- Indexes uploaded documents with sentence-level chunking
+- Retrieves relevant chunks using semantic vector search (ChromaDB + FAISS)
+- Returns grounded answers with source passage citations
+- Scores every response on three dimensions: relevance, source coverage, and unsupported-answer risk
+- Flags answers that make claims not supported by retrieved context
 
-> **Most RAG chatbots just answer. This system also _evaluates_ whether those answers can be trusted.**
+The evaluation layer is not a demo feature. It runs on every query and outputs a structured score object alongside the answer. Answers that exceed unsupported-answer risk threshold are flagged before they reach the user.
+
+---
+
+## Architecture
 
 ```
-╔══════════════════════════════════════════════════════════════════════╗
-║  Upload Docs → Semantic Search → Grounded Answers → Trust Scores    ║
-╚══════════════════════════════════════════════════════════════════════╝
-```
-
-</div>
-
----
-
-## 🎯 What Makes This Different
-
-| Ordinary RAG Chatbot | ✅ This System |
-|----------------------|---------------|
-| Retrieves chunks | Retrieves + measures **Precision@K, Recall@K, MRR, nDCG** |
-| Generates an answer | Generates + measures **Faithfulness & Hallucination Risk** |
-| Answers everything | Knows when to say **"Not enough information"** |
-| No feedback loop | **10-category failure analysis** with fix suggestions |
-| Single config | **Experiment tracking** across chunk sizes, models, top-K |
-
----
-
-## 📸 Screenshots
-
-### Page 1 — Upload Documents
-*Upload PDF, DOCX, TXT, CSV, XLSX, HTML files. Configure chunking strategy, chunk size, overlap, embedding model, and vector store. View indexed document table with live status.*
-
-<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page1_upload_documents.png" width="100%" alt="Upload Documents Page"/>
-
----
-
-### Page 2 — Ask Questions
-*Type a natural-language question. Get a grounded answer with source citations, similarity scores, evidence strength rating, and per-chunk reranking scores.*
-
-<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page2_ask_questions.png" width="100%" alt="Ask Questions Page"/>
-
----
-
-### Page 3 — Evaluation Runner
-*Load 50 benchmark questions (CSV / DB / manual). Run end-to-end evaluation. See generated vs expected answers side-by-side with Precision@K, Faithfulness, and failure category per question.*
-
-<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page3_run_evaluation.png" width="100%" alt="Run Evaluation Page"/>
-
----
-
-### Page 4 — Metrics Dashboard
-*10 KPI tiles + bar charts for answer quality metrics, source hit rate by question type, latency histogram, and failure category breakdown.*
-
-<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page4_metrics_dashboard.png" width="100%" alt="Metrics Dashboard Page"/>
-
----
-
-### Page 5 — Failure Analysis
-*Per-failure drill-down: generated vs expected answer, root-cause category, retrieval metadata, and specific actionable improvement suggestion.*
-
-<img src="https://github.com/Avvv19/rag-search-answer-evaluation-assistant/raw/main/docs/screenshots/page5_failure_analysis.png" width="100%" alt="Failure Analysis Page"/>
-
----
-
-## 🏗️ Architecture
-
-```
-User Query
-    │
-    ▼
-┌─────────────────────────────────────────────────────┐
-│              Streamlit UI (5 pages)                  │
-└────────────────────┬────────────────────────────────┘
-                     │
-              FastAPI Backend (optional)
-                     │
-    ┌────────────────┼────────────────┐
-    ▼                ▼                ▼
-Vector Search     BM25 Search    Metadata Filter
-(FAISS/Chroma)  (rank-bm25)      (SQLite)
-    │                │
-    └────────┬───────┘
-             ▼
-      RRF Hybrid Fusion
-             │
-             ▼
-     Cross-Encoder Reranker
-             │
-             ▼
-     Answer Generator
-   (Ollama / HuggingFace / Stub)
-             │
-             ▼
-    Evaluation & Metrics Engine
-    (12 metrics · 10 failure categories)
+Document Upload
+      │
+      ▼
+[Chunker]  — sentence-level splitting, ~300 token target
+      │
+      ▼
+[Embedder]  — Sentence Transformers (all-MiniLM-L6-v2)
+      │
+      ▼
+[Vector Store]  — ChromaDB (persistent) + FAISS (in-memory for speed)
+      │
+      ▼
+User Query ──► [Retriever]  — top-k semantic search
+                    │
+                    ▼
+               [Generator]  — OpenAI GPT-4o with retrieved context
+                    │
+                    ▼
+               [Evaluator]  — scores: relevance / coverage / unsupported risk
+                    │
+                    ▼
+              Answer + Score + Source Citations
 ```
 
 ---
 
-## 🚀 Quick Start
+## Evaluation pipeline
+
+### Golden evaluation set
+
+`evaluation/golden_set.json` contains 25 hand-labelled question-answer pairs covering:
+- Direct retrieval (exact keyword match)
+- Inference (requires combining information across chunks)
+- Multi-section reasoning
+- Edge cases (out-of-scope questions, ambiguous references)
+- Negation and conditional logic
+
+### Scoring dimensions
+
+| Dimension | What it measures | Flag threshold |
+|---|---|---|
+| Relevance | Does the answer address the question? | < 0.6 |
+| Source coverage | Are claims backed by retrieved chunks? | < 0.7 |
+| Unsupported answer risk | Does the answer contain claims outside retrieved context? | > 0.3 |
+
+### Running evaluation
 
 ```bash
-# 1. Clone
-git clone https://github.com/Avvv19/rag-search-answer-evaluation-assistant.git
+python evaluation/run_eval.py --golden evaluation/golden_set.json --output evaluation/results/
+```
+
+Output: `evaluation/results/eval_YYYY-MM-DD.json` with per-question scores and aggregate metrics.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Chunking | Custom sentence-level splitter |
+| Embeddings | Sentence Transformers (all-MiniLM-L6-v2) |
+| Vector store | ChromaDB (persistent) + FAISS (fast retrieval) |
+| LLM | OpenAI API (GPT-4o) |
+| Evaluation | Custom scoring against golden_set.json |
+| UI | Streamlit |
+
+---
+
+## Quickstart
+
+### Prerequisites
+- Python 3.11+
+- OpenAI API key
+
+### Run locally
+
+```bash
+git clone https://github.com/Avvv19/rag-search-answer-evaluation-assistant
 cd rag-search-answer-evaluation-assistant
-
-# 2. Install
-python -m venv venv && source venv/bin/activate
+cp .env.example .env          # add OPENAI_API_KEY
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-
-# 3. Configure
-cp .env.example .env       # edit LLM_BACKEND, EMBEDDING_MODEL, etc.
-
-# 4. Launch
-streamlit run app/streamlit_app.py
-# → http://localhost:8501
+streamlit run app.py
 ```
 
-### Docker
-```bash
-docker build -t rag-eval .
-docker run -p 8501:8501 -v $(pwd)/data:/app/data rag-eval
-```
+Open http://localhost:8501. Upload a PDF or text file, then ask questions.
 
-### FastAPI (optional)
-```bash
-uvicorn backend.api:app --reload --port 8000
-# → http://localhost:8000/docs
+---
+
+## Environment variables
+
+```
+OPENAI_API_KEY=sk-...
+CHROMA_PERSIST_DIR=./chroma_db
+EVAL_THRESHOLD_RELEVANCE=0.6
+EVAL_THRESHOLD_COVERAGE=0.7
+EVAL_THRESHOLD_UNSUPPORTED=0.3
 ```
 
 ---
 
-## 📁 Project Structure
+## Project structure
 
 ```
-rag_search_answer_evaluation_assistant/
-├── app/
-│   ├── streamlit_app.py              ← Main entry point
-│   └── pages/
-│       ├── 1_upload_documents.py     ← Upload & index
-│       ├── 2_ask_questions.py        ← Q&A + citations
-│       ├── 3_run_evaluation.py       ← Eval runner
-│       ├── 4_metrics_dashboard.py    ← Metrics viz
-│       └── 5_failure_analysis.py     ← Failure diagnosis
-├── backend/
-│   ├── config.py           ingestion.py   chunking.py
-│   ├── embeddings.py       vector_store.py  bm25_search.py
-│   ├── hybrid_retriever.py reranker.py    generator.py
-│   ├── evaluator.py        feedback.py    pipeline.py   api.py
-├── database/
-│   ├── schema.sql (6 tables)    db.py (CRUD helpers)
+rag-search-answer-evaluation-assistant/
+├── app.py                    # Streamlit entry point
+├── rag/
+│   ├── chunker.py            # Sentence-level document chunking
+│   ├── embedder.py           # Sentence Transformer embedding wrapper
+│   ├── retriever.py          # ChromaDB + FAISS retrieval
+│   └── generator.py          # OpenAI call with context injection
 ├── evaluation/
-│   ├── test_questions.csv (50 questions)
-│   ├── run_eval.py   metrics.py   failure_analysis.py
+│   ├── golden_set.json       # 25 hand-labelled Q&A pairs
+│   ├── scorer.py             # Relevance, coverage, unsupported-risk scoring
+│   ├── run_eval.py           # CLI evaluation runner
+│   └── results/              # Stored eval results by date
 ├── tests/
-│   ├── test_chunking.py (6 tests)
-│   ├── test_retrieval.py (8 tests)
-│   └── test_evaluation.py (13 tests)
-├── Dockerfile    requirements.txt    .env.example
+│   ├── test_chunker.py
+│   ├── test_retriever.py
+│   └── test_scorer.py
+├── requirements.txt
+└── .env.example
 ```
 
 ---
 
-## 🧠 Supported Models
+## Understanding the scores
 
-### Embedding Models
+**Relevance** — cosine similarity between the query embedding and the answer embedding. Measures whether the answer is topically on-target.
 
-| Model | Params | Best For |
-|-------|--------|----------|
-| `all-MiniLM-L6-v2` ⭐ | 22M | General purpose (default) |
-| `multi-qa-MiniLM-L6-cos-v1` | 22M | Q&A retrieval |
-| `BAAI/bge-small-en` | 33M | High quality, small |
-| `BAAI/bge-base-en` | 109M | High quality, larger |
-| `intfloat/e5-small-v2` | 33M | E5 family |
-| `intfloat/e5-base-v2` | 109M | E5 family, larger |
+**Source coverage** — fraction of answer sentences that have a retrieved chunk with similarity above threshold. Low coverage means the answer is going beyond what was retrieved.
 
-### LLM Backends
+**Unsupported answer risk** — inverse of source coverage, weighted by answer length. A short answer with one unsupported sentence scores differently from a long answer with one unsupported sentence.
 
-| Backend | Config | Notes |
-|---------|--------|-------|
-| `ollama` 🦙 | `OLLAMA_MODEL=llama3` | 100% local, requires Ollama |
-| `huggingface` 🤗 | `HF_MODEL=google/flan-t5-base` | Auto-downloads |
-| `stub` 🧪 | — | Testing/CI mode |
+When all three dimensions are within threshold: the answer is presented normally.
+When any dimension fails: the answer is presented with a yellow warning flag and the specific dimension that failed.
 
 ---
 
-## 📊 Evaluation Metrics
+## Running the golden set evaluation
 
-### Retrieval
-```
-Precision@K   = (relevant docs in top-K) / K
-Recall@K      = 1 if expected doc in top-K else 0
-MRR           = 1 / rank_of_first_relevant_result
-nDCG@K        = DCG@K / IDCG@K
-Source Coverage = matching chunks / total chunks
-```
-
-### Answer Quality
-```
-Answer Relevance  = cosine_sim(question, answer)
-Faithfulness      = avg sim(answer sentences, context)
-Completeness      = 0.4×token_overlap + 0.6×semantic_sim
-Citation Accuracy = correct citations / total citations
-Hallucination Risk = 1 - Faithfulness
-No-Answer Accuracy = correct refusal/answer rate
-```
-
----
-
-## 🔴 Failure Categories
-
-| Category | Meaning | Fix |
-|----------|---------|-----|
-| `retrieval_miss` | Correct doc not retrieved | Check indexing; try hybrid; ↑ top-K |
-| `low_relevance_retrieval` | Low similarity scores | Use `bge-base-en`; enable reranker |
-| `partial_context` | Only partial answer in context | ↑ chunk size; ↑ overlap; ↑ top-K |
-| `bad_chunking` | Context split across chunks | Switch to `section_aware` |
-| `conflicting_sources` | Multiple conflicting docs | Add metadata filters |
-| `unsupported_answer` | Answer not grounded | ↓ LLM temperature; stricter prompt |
-| `citation_mismatch` | Wrong docs cited | Normalise doc names on ingest |
-| `no_answer_failure` | Wrong refusal/answer decision | Tune evidence threshold |
-| `ambiguous_query` | Query too vague | Add query rewriting |
-| `metadata_filtering_failure` | Filters excluded correct doc | Verify metadata values |
-
----
-
-## 🧪 Tests
+The golden set covers the full range of question difficulty. Running it against your deployed system gives you a regression baseline:
 
 ```bash
-pytest tests/ -v
-# 27 tests — chunking, BM25/RRF retrieval, all 12 evaluation metrics
+# Run full evaluation
+python evaluation/run_eval.py
+
+# Output shows per-question pass/fail and aggregate score
+# Example output:
+# GS-001 PASS  relevance=0.87  coverage=0.92  unsupported=0.05
+# GS-016 PASS  (out-of-scope correctly declined)
+# GS-025 FAIL  coverage=0.48  (cross-document check failed — review chunk size)
 ```
 
----
-
-## 📋 Benchmark Dataset
-
-50 questions across 8 types:
-- ✅ Factual lookup · Policy · Summary · Comparison
-- ✅ Numeric/date · Multi-document · Ambiguous
-- ✅ **Unanswerable** (tests no-answer refusal)
-
----
-
-## 🔧 Configuration
-
-```env
-LLM_BACKEND=ollama          # ollama | huggingface | stub
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-VECTOR_STORE=faiss           # faiss | chroma
-TOP_K=5
-CHUNK_SIZE=500
-CHUNK_OVERLAP=50
-USE_RERANKER=true
-USE_HYBRID=true
-```
-
----
-
-## 📜 License
-
-MIT — Unregistered
-
----
-
-<div align="center">
-
-**Built with Streamlit · FAISS · ChromaDB · Sentence-Transformers · BM25 · Ollama**
-
-⭐ Star this repo if it helped you build more reliable RAG systems!
-
-</div>
+When you change the chunker, embedder, or retrieval parameters, re-run the golden set to catch regressions before they reach users.
