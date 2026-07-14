@@ -23,7 +23,7 @@ st.set_page_config(
 st.title("🔍 RAG Search & Answer Evaluation Assistant")
 st.markdown(
     """
-    An **enterprise-grade RAG platform** that lets you upload private documents,
+    A **personal RAG evaluation prototype** that lets you upload documents,
     search them semantically, generate source-grounded answers, and measure
     whether those answers are **trustworthy**.
 
